@@ -1,0 +1,67 @@
+[tool.poetry]
+name = "weather-forecast"
+version = "0.1.0"
+description = ""
+authors = ["Pololoshka <sokolova.polya.98@gmail.com>"]
+readme = "README.md"
+packages = [{include = "weather_forecast"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+flake8 = "*"
+flake8-bandit = "*"
+flake8-bugbear = "*"
+flake8-builtins = "*"
+flake8-cognitive-complexity = "*"
+flake8-comprehensions = "*"
+flake8-eradicate = "*"
+flake8-mutable = "*"
+flake8-print = "*"
+flake8-pytest-style = "*"
+flake8-return = "*"
+pep8-naming = "*"
+black = "*"
+isort = "*"
+pre-commit = "*"
+mypy = "*"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = "black"
+
+[tool.pytest.ini_options]
+addopts = "-ra -q --strict-markers"
+
+[tool.coverage.run]
+branch = true
+source = [
+    "./src/",
+]
+omit = [
+    "*/tests/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if not logging",
+    "if name == .main.:",
+    "if .*TYPE_CHECKING:"
+]
+
+[tool.mypy]
+disallow_untyped_defs = true
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true

@@ -1,0 +1,23 @@
+# Byte-compiled / optimized / DLL files
+pycache/
+
+# Unit test / coverage reports
+.coverage
+.coverage.*
+coverage.*
+htmlcov/
+.pytest_cache/
+
+# Python dependencies
+.venv
+.python-version
+_packages
+
+# mypy
+.mypy_cache/
+
+# JetBrains IDE settings
+.idea/
+
+# Environments variables
+.env
