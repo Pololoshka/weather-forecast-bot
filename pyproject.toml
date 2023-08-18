@@ -8,10 +8,16 @@ packages = [{include = "weather_forecast"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+requests = "^2.31.0"
+bs4 = "^0.0.1"
+opencv-python = "^4.8.0.76"
 
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
+requests-mock = "^1.11.0"
+freezegun = "^1.2.2"
+# Linters and Formattors
 flake8 = "*"
 flake8-bandit = "*"
 flake8-bugbear = "*"
@@ -28,6 +34,7 @@ black = "*"
 isort = "*"
 pre-commit = "*"
 mypy = "*"
+types-requests = "^2.31.0.2"
 
 
 [build-system]
