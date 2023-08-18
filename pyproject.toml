@@ -4,13 +4,18 @@ version = "0.1.0"
 description = ""
 authors = ["Pololoshka <sokolova.polya.98@gmail.com>"]
 readme = "README.md"
-packages = [{include = "weather_forecast"}]
+packages = [{ include = "weather_forecast" }]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.12"
 requests = "^2.31.0"
 bs4 = "^0.0.1"
-opencv-python = "^4.8.0.76"
+#opencv-python = "^4.8"
+sqlalchemy = "^2.0"
+python-dotenv = "^1.0.0"
+psycopg = { extras = ["binary", "pool"], version = "^3.1" }
+alembic = "^1.11"
+pytelegrambotapi = "^4.14.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -18,23 +23,11 @@ pytest = "^7.4.0"
 requests-mock = "^1.11.0"
 freezegun = "^1.2.2"
 # Linters and Formattors
-flake8 = "*"
-flake8-bandit = "*"
-flake8-bugbear = "*"
-flake8-builtins = "*"
-flake8-cognitive-complexity = "*"
-flake8-comprehensions = "*"
-flake8-eradicate = "*"
-flake8-mutable = "*"
-flake8-print = "*"
-flake8-pytest-style = "*"
-flake8-return = "*"
-pep8-naming = "*"
 black = "*"
-isort = "*"
+ruff = "*"
 pre-commit = "*"
 mypy = "*"
-types-requests = "^2.31.0.2"
+types-requests = "*"
 
 
 [build-system]
@@ -43,9 +36,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 100
-
-[tool.isort]
-profile = "black"
 
 [tool.pytest.ini_options]
 addopts = "-ra -q --strict-markers"
@@ -72,3 +62,44 @@ disallow_untyped_defs = true
 warn_return_any = true
 warn_unused_configs = true
 ignore_missing_imports = true
+
+[tool.ruff]
+target-version = "py312"
+extend-exclude = [".venv"]
+line-length = 100
+
+# https://docs.astral.sh/ruff/rules/#error-e
+select = [
+  "E",   # Error
+  "F",   # Pyflakes
+  "I",   # Isort
+  "N",   # pep8-naming
+  "S",   # flake8-bandit
+  "B",   # flake8-bugbear
+  "C4",  # flake8-comprehensions
+  "ICN", # flake8-import-conventions
+  "PIE", # flake8-pie
+  "PT",  # flake8-pytest-style
+  "Q",   # flake8-quotes
+  "SIM", # flake8-simplify
+  "C90", # mccabe for complexicty
+  "UP",  # pyupgrade
+  "T20", # flake8-print
+]
+ignore = [
+  "N805", # First argument of a method should be named self
+]
+
+[tool.ruff.extend-per-file-ignores]
+"test*" = [
+  "S101", # Allow use of asserts
+]
+
+[tool.ruff.flake8-builtins]
+builtins-ignorelist = ["id"]
+
+[tool.ruff.flake8-comprehensions]
+allow-dict-calls-with-keyword-arguments = true
+
+[tool.ruff.mccabe]
+max-complexity = 8

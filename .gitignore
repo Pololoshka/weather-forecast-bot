@@ -17,6 +17,9 @@ _packages
 # mypy
 .mypy_cache/
 
+# ruff
+.ruff_cache/
+
 # JetBrains IDE settings
 .idea/
 

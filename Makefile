@@ -5,12 +5,18 @@ install_pre_commit:
 
 fix:
 	black src tests
-	isort src tests
+	ruff check src tests --fix
 
 
 check:
 	black --check src tests
-	isort --check src tests
+	ruff check src tests
 	mypy --namespace-packages --explicit-package-bases src tests
-	flake8 src tests
 	pytest tests
+
+
+generate:
+	alembic revision --m="$(NAME)" --autogenerate
+
+migrate:
+	alembic upgrade head
