@@ -7,91 +7,72 @@ from src.services.text import get_language
 from src.services.ui.bot import MyBot
 from src.view.bot.add_new_cities_in_bd import add_new_cities_in_bd
 from src.view.bot.chahge_preferred_city_user import change_preferred_city
-from src.view.bot.create_markup import MarkupBot
 from src.view.bot.create_message import MessageBot
 
 
 def start(message: Message, bot: MyBot, user: User) -> None:
-    markup = MarkupBot.create_buttons_with_cities_user(user=user)
-    MessageBot.create_start_message(message_chat_id=message.chat.id, markup=markup, bot=bot)
+    MessageBot(chat_id=message.chat.id, bot=bot).create_start_message(user=user)
 
 
 def add_new_city(message: Message, bot: MyBot, user: User) -> None:
-    MessageBot.create_message_with_input_new_city(message_chat_id=message.chat.id, bot=bot)
+    MessageBot(chat_id=message.chat.id, bot=bot).create_message_with_input_new_city()
     bot.register_next_step_handler(message=message, callback=on_click)
 
 
 def on_click(message: Message, bot: MyBot, user: User) -> None:
+    output_message = MessageBot(chat_id=message.chat.id, bot=bot)
     language = get_language(message.text)
     city_name = message.text.lower()
 
     if cities_in_bd := bot.services.uow.cities.get_by_name(city=city_name):
-        markup = MarkupBot.create_buttons_with_new_cities(cities=cities_in_bd)
-        MessageBot.create_message_with_new_cities(
-            message_chat_id=message.chat.id, bot=bot, city_name=city_name, markup=markup
-        )
+        output_message.create_message_with_new_cities(city_name=city_name, cities=cities_in_bd)
 
     elif cities := bot.services.geo_client.get_geolocation(city_name=city_name, language=language):
         add_new_cities_in_bd(bot=bot, cities=cities)
-        markup = MarkupBot.create_buttons_with_new_cities(
-            cities=bot.services.uow.cities.get_by_name(city_name)
-        )
-        MessageBot.create_message_with_new_cities(
-            message_chat_id=message.chat.id, bot=bot, city_name=city_name, markup=markup
+        output_message.create_message_with_new_cities(
+            city_name=city_name, cities=bot.services.uow.cities.get_by_name(city_name)
         )
 
     else:
-        MessageBot.create_message_wrong_city(
-            message_chat_id=message.chat.id,
-            markup=MarkupBot.create_buttons_with_cities_user(user=user),
-            bot=bot,
-        )
+        output_message.create_message_wrong_city(user=user)
 
 
 def choose_another_city(message: Message, bot: MyBot, user: User) -> None:
-    MessageBot.create_message_choose_another_city(
-        message_chat_id=message.chat.id,
-        markup=MarkupBot.create_buttons_with_cities_user(user=user),
-        bot=bot,
-    )
+    MessageBot(chat_id=message.chat.id, bot=bot).create_message_choose_another_city(user=user)
 
 
 def create_current_weather_forecast(message: Message, bot: MyBot, user: User) -> None:
+    output_message = MessageBot(chat_id=message.chat.id, bot=bot)
     if preferred_user_city := user.preferred_user_city:
         city = preferred_user_city.city
         current_weather = bot.services.weather_client.get_current_weather(geolocation=city)
-        MessageBot.create_message_with_current_weather(
-            message_chat_id=message.chat.id,
-            bot=bot,
+        output_message.create_message_with_current_weather(
             date=datetime.fromtimestamp(message.date),
             city=city,
             current_weather=current_weather,
         )
     else:
-        MessageBot.create_message_except_no_preferred_city(
-            message_chat_id=message.chat.id, bot=bot, markup=MarkupBot.create_button_add_new_city()
-        )
+        output_message.create_message_except_no_preferred_city()
 
 
 def create_weather_forecast_on_one_day(message: Message, bot: MyBot, user: User) -> None:
+    output_message = MessageBot(chat_id=message.chat.id, bot=bot)
     if preferred_user_city := user.preferred_user_city:
         city = preferred_user_city.city
         weather_forecast = bot.services.weather_client.get_forecast_weather(
             geolocation=city, days=1
         )
-        MessageBot.create_message_with_weather_forecast_on_one_day(
-            message_chat_id=message.chat.id,
-            bot=bot,
+        output_message.create_message_with_weather_forecast_on_one_day(
             city=city,
             day=weather_forecast.weather_on_day[0],
         )
     else:
-        MessageBot.create_message_except_no_preferred_city(
-            message_chat_id=message.chat.id, bot=bot, markup=MarkupBot.create_button_add_new_city()
-        )
+        output_message.create_message_except_no_preferred_city()
 
 
 def create_weather_forecast_on_three_days(message: Message, bot: MyBot, user: User) -> None:
+    output_message = MessageBot(chat_id=message.chat.id, bot=bot)
+
     if preferred_user_city := user.preferred_user_city:
         city = preferred_user_city.city
         forecast_weather = bot.services.weather_client.get_forecast_weather(
@@ -99,66 +80,57 @@ def create_weather_forecast_on_three_days(message: Message, bot: MyBot, user: Us
         )
 
         for day in forecast_weather.weather_on_day:
-            MessageBot.create_message_with_weather_forecast_for_few_days(
-                message_chat_id=message.chat.id,
-                bot=bot,
+            output_message.create_message_with_weather_forecast_for_few_days(
                 city=city,
                 day=day,
             )
     else:
-        MessageBot.create_message_except_no_preferred_city(
-            message_chat_id=message.chat.id, bot=bot, markup=MarkupBot.create_button_add_new_city()
-        )
+        output_message.create_message_except_no_preferred_city()
 
 
 def create_weather_forecast_on_seven_days(message: Message, bot: MyBot, user: User) -> None:
+    output_message = MessageBot(chat_id=message.chat.id, bot=bot)
+
     if preferred_user_city := user.preferred_user_city:
         city = preferred_user_city.city
         forecast_weather = bot.services.weather_client.get_forecast_weather(
             geolocation=city, days=7
         )
         for day in forecast_weather.weather_on_day:
-            MessageBot.create_message_with_weather_forecast_for_few_days(
-                message_chat_id=message.chat.id,
-                bot=bot,
+            output_message.create_message_with_weather_forecast_for_few_days(
                 city=city,
                 day=day,
             )
     else:
-        MessageBot.create_message_except_no_preferred_city(
-            message_chat_id=message.chat.id, bot=bot, markup=MarkupBot.create_button_add_new_city()
-        )
+        output_message.create_message_except_no_preferred_city()
 
 
 def create_weather_forecast_on_fourteen_day(message: Message, bot: MyBot, user: User) -> None:
+    output_message = MessageBot(chat_id=message.chat.id, bot=bot)
+
     if preferred_user_city := user.preferred_user_city:
         city = preferred_user_city.city
         forecast_weather = bot.services.weather_client.get_forecast_weather(
             geolocation=city, days=14
         )
         for day in forecast_weather.weather_on_day:
-            MessageBot.create_message_with_weather_forecast_for_few_days(
-                message_chat_id=message.chat.id,
-                bot=bot,
+            output_message.create_message_with_weather_forecast_for_few_days(
                 city=city,
                 day=day,
             )
     else:
-        MessageBot.create_message_except_no_preferred_city(
-            message_chat_id=message.chat.id, bot=bot, markup=MarkupBot.create_button_add_new_city()
-        )
+        output_message.create_message_except_no_preferred_city()
 
 
 def delete_city_user(message: Message, bot: MyBot, user: User) -> None:
     del user.city_associations[:-4]
     bot.services.uow.session.flush()
-    markup = MarkupBot.create_buttons_with_cities_user(user=user)
-    MessageBot.create_message_delete_city_user(
-        message_chat_id=message.chat.id, bot=bot, markup=markup
-    )
+    MessageBot(chat_id=message.chat.id, bot=bot).create_message_delete_city_user(user=user)
 
 
 def handle_text(message: Message, bot: MyBot, user: User) -> None:
+    output_message = MessageBot(chat_id=message.chat.id, bot=bot)
+
     message_list = message.text[:-1].split(" (")
     if len(message_list) == 2:
         city_name = message_list[0]
@@ -173,35 +145,16 @@ def handle_text(message: Message, bot: MyBot, user: User) -> None:
 
             change_preferred_city(user=user, city_id=city.id, uow=bot.services.uow)
 
-            MessageBot.create_message_with_preferred_city(
-                message_chat_id=message.chat.id,
-                markup=MarkupBot.create_buttons_for_days(),
-                city_name=city_name.title(),
-                country=country,
-                district=district,
-                bot=bot,
-            )
+            output_message.create_message_with_preferred_city(city=city)
         else:
-            MessageBot.create_message_with_incomprehension(
-                message_chat_id=message.chat.id,
-                markup=MarkupBot.create_buttons_choose_another_city(),
-                bot=bot,
-            )
+            output_message.create_message_with_incomprehension()
 
     else:
-        MessageBot.create_message_with_incomprehension(
-            message_chat_id=message.chat.id,
-            markup=MarkupBot.create_buttons_choose_another_city(),
-            bot=bot,
-        )
+        output_message.create_message_with_incomprehension()
 
 
 def handle_any_content(message: Message, bot: MyBot, user: User) -> None:
-    MessageBot.create_message_with_incomprehension(
-        message_chat_id=message.chat.id,
-        markup=MarkupBot.create_buttons_choose_another_city(),
-        bot=bot,
-    )
+    MessageBot(chat_id=message.chat.id, bot=bot).create_message_with_incomprehension()
 
 
 # @bot.callback_query_handler(func=lambda callback: True)
