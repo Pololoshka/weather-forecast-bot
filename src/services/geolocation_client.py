@@ -1,6 +1,6 @@
 import requests
 
-from src.models import Geolocation
+from src.models.models_for_db import City
 
 
 class GeolocationClient:
@@ -8,12 +8,15 @@ class GeolocationClient:
         self.url = url
         self.timeout = timeout
 
-    def get_geolocation(self, city: str, language: str) -> Geolocation:
+    def get_geolocation(self, city_name: str, language: str) -> list[City] | None:
         response = requests.get(
             url=self.url,
-            params={"name": city, "count": "1", "format": "json", "language": language},
+            params={"name": city_name, "count": "5", "format": "json", "language": language},
             timeout=self.timeout,
         )
-        geo = Geolocation.parse(data=response.json()["results"][0])
-        geo.city = city
-        return geo
+        if "results" not in response.json():
+            return None
+        geolocations = []
+        for result in response.json()["results"]:
+            geolocations.append(City.parse(data=result))
+        return geolocations

@@ -1,6 +1,7 @@
 import requests
 
-from src.models import CurrentWeather, Geolocation, WeatherForecast
+from src.models.models_for_db import City
+from src.models.query_models_api import CurrentWeather, WeatherForecast
 
 
 class WeatherClient:
@@ -8,7 +9,7 @@ class WeatherClient:
         self.url = url
         self.timeout = timeout
 
-    def get_forecast_weather(self, days: int, geolocation: Geolocation) -> WeatherForecast:
+    def get_forecast_weather(self, days: int, geolocation: City) -> WeatherForecast:
         response = requests.get(
             url=self.url,
             params={
@@ -23,7 +24,7 @@ class WeatherClient:
         )
         return WeatherForecast.parse(data=response.json()["daily"])
 
-    def get_current_weather(self, geolocation: Geolocation) -> CurrentWeather:
+    def get_current_weather(self, geolocation: City) -> CurrentWeather:
         response = requests.get(
             url=self.url,
             params={

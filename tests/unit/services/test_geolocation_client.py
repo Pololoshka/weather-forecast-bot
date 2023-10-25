@@ -1,7 +1,7 @@
 import pytest
 from requests_mock import Mocker as RequestsMocker
 
-from src.models import Geolocation
+from src.models.models_for_db import City
 from src.services.geolocation_client import GeolocationClient
 from src.settings import Settings
 
@@ -12,7 +12,7 @@ def client(settings: Settings) -> GeolocationClient:
 
 
 def test_get_geolocation(
-    requests_mock: RequestsMocker, client: GeolocationClient, geolocation: Geolocation
+    requests_mock: RequestsMocker, client: GeolocationClient, geolocation: City
 ) -> None:
     requests_mock.get(
         url=client.url,
@@ -20,7 +20,7 @@ def test_get_geolocation(
             "results": [
                 {
                     "id": 498817,
-                    "name": "Санкт-Петербург",
+                    "name": "санкт-петербург",
                     "latitude": 59.93863,
                     "longitude": 30.31413,
                     "elevation": 11.0,
@@ -37,5 +37,5 @@ def test_get_geolocation(
             "generationtime_ms": 1.461029,
         },
     )
-    expected = geolocation
-    assert client.get_geolocation("Санкт-Петербург") == expected
+    expected = [geolocation]
+    assert client.get_geolocation(city_name="санкт-петербург", language="ru") == expected

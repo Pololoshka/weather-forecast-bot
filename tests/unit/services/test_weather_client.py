@@ -3,7 +3,12 @@ from datetime import datetime
 import pytest
 from requests_mock import Mocker as RequestsMocker
 
-from src.models import CurrentWeather, Geolocation, WeatherForecast, WeatherOnDay
+from src.models.models_for_db import City
+from src.models.query_models_api import (
+    CurrentWeather,
+    WeatherForecast,
+    WeatherOnDay,
+)
 from src.services.wheater_client import WeatherClient
 from src.settings import Settings
 
@@ -14,7 +19,7 @@ def client(settings: Settings) -> WeatherClient:
 
 
 def test_get_forecast_weather(
-    requests_mock: RequestsMocker, client: WeatherClient, geolocation: Geolocation
+    requests_mock: RequestsMocker, client: WeatherClient, geolocation: City
 ) -> None:
     requests_mock.get(
         client.url,
@@ -88,7 +93,7 @@ def test_get_forecast_weather(
 
 
 def test_get_current_weather(
-    requests_mock: RequestsMocker, client: WeatherClient, geolocation: Geolocation
+    requests_mock: RequestsMocker, client: WeatherClient, geolocation: City
 ) -> None:
     requests_mock.get(
         client.url,

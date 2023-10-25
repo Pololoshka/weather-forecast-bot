@@ -1,3 +1,4 @@
+from types import TracebackType
 from typing import Protocol, Self
 
 from sqlalchemy import URL, create_engine
@@ -30,26 +31,31 @@ class SqlAlchemyUnitOfWork:
     users: UserRepo
     cities: CityRepo
 
-    def __init__(self, session_factory):
+    def __init__(self, session_factory: sessionmaker):
         self.session_factory = session_factory
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         self.session = self.session_factory()
         self.users = UserRepo(session=self.session)
         self.cities = CityRepo(session=self.session)
         self.user_city = UserCityRepo(session=self.session)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
         if exc_type:
             self.rollback()
         else:
             self.commit()
         self.session.close()
 
-    def commit(self):
+    def commit(self) -> None:
         self.session.commit()
 
-    def rollback(self):
+    def rollback(self) -> None:
         self.session.rollback()
 
     @classmethod
@@ -61,7 +67,3 @@ class SqlAlchemyUnitOfWork:
                 ),
             )
         )
-
-
-if __name__ == "__main__":
-    ...

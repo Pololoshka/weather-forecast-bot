@@ -1,35 +1,68 @@
+from collections.abc import Sequence
+
 from telebot import types
 from telebot.types import ReplyKeyboardMarkup
 
-from src.models import User
+from src.models.models_for_db import City, User
+from src.services.ui.const_ui import Text
 
 
 class MarkupBot:
     @staticmethod
     def create_buttons_for_days() -> ReplyKeyboardMarkup:
-        markup_with_days = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        button_1 = types.KeyboardButton("Сейчас")
-        button_2 = types.KeyboardButton("На 1 день")
-        button_3 = types.KeyboardButton("На 3 дня")
-        button_4 = types.KeyboardButton("На 7 дней")
-        button_5 = types.KeyboardButton("На 14 дней")
-        button_6 = types.KeyboardButton("Выбрать другой город")
-        markup_with_days.row(button_1)
-        markup_with_days.row(button_2, button_3)
-        markup_with_days.row(button_4, button_5)
-        markup_with_days.row(button_6)
-        return markup_with_days
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+        markup.add(types.KeyboardButton(Text.now), row_width=1)
+        markup.add(
+            types.KeyboardButton(Text.one_day),
+            types.KeyboardButton(Text.three_days),
+            types.KeyboardButton(Text.seven_days),
+            types.KeyboardButton(Text.fourteen_days),
+        )
+        markup.add(types.KeyboardButton(Text.choose_city), row_width=1)
+        return markup
 
     @staticmethod
-    def create_buttons_with_cities(user: User) -> ReplyKeyboardMarkup:
-        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        markup.add(types.KeyboardButton("Добавить новый город"))
-        for city in user.cities:
-            markup.add(types.KeyboardButton(city.name))
+    def create_buttons_with_cities_user(user: User) -> ReplyKeyboardMarkup:
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+        markup.add(types.KeyboardButton(Text.add_city), row_width=1)
+        if len(user.city_associations) > 4:
+            markup.add(
+                types.KeyboardButton("Очистить историю поиска🗑 \n(оставлю 4 последних города)"),
+                row_width=1,
+            )
+        markup.add(
+            *[
+                types.KeyboardButton(f"{city.name.title()} ({city.country}, {city.district})")
+                for city in user.cities
+            ],
+            row_width=2,
+        )
+
+        return markup
+
+    @staticmethod
+    def create_buttons_with_new_cities(cities: Sequence[City]) -> ReplyKeyboardMarkup:
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+
+        markup.add(
+            *[
+                types.KeyboardButton(f"{city.name.title()} ({city.country}, {city.district})")
+                for city in cities
+            ],
+            row_width=2,
+        )
+        markup.add(types.KeyboardButton(Text.choose_city), row_width=1)
+
         return markup
 
     @staticmethod
     def create_buttons_choose_another_city() -> ReplyKeyboardMarkup:
         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-        markup.add(types.KeyboardButton("Выбрать другой город"))
+        markup.add(types.KeyboardButton(Text.choose_city))
+        return markup
+
+    @staticmethod
+    def create_button_add_new_city() -> ReplyKeyboardMarkup:
+        markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+        markup.add(types.KeyboardButton(Text.add_city))
         return markup
