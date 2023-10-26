@@ -79,4 +79,4 @@ class City(Base):
 
     @hybrid_property
     def language(self) -> Language:
-        return get_language(message=self.name)
+        return get_language(text=self.name)

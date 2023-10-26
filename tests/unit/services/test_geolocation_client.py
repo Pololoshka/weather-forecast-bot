@@ -1,8 +1,8 @@
 import pytest
 from requests_mock import Mocker as RequestsMocker
 
-from src.models.models_for_db import City
-from src.services.geolocation_client import GeolocationClient
+from src.services.db.models_for_db import City
+from src.services.geolocation.geolocation_client import GeolocationClient
 from src.settings import Settings
 
 

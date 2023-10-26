@@ -3,7 +3,7 @@ from collections.abc import Sequence
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.models.models_for_db import City, User, UserCity
+from src.services.db.models_for_db import City, User, UserCity
 
 
 class UserRepo:

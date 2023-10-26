@@ -3,10 +3,10 @@ from datetime import datetime
 
 from telebot import types
 
-from src.models.models_for_db import City, User
-from src.models.query_models_api import CurrentWeather, WeatherOnDay
+from src.services.db.models_for_db import City, User
 from src.services.ui.bot import MyBot
 from src.services.ui.const_ui import Text
+from src.services.weather.weather_models import CurrentWeather, WeatherOnDay
 
 
 class MessageBot:
@@ -53,6 +53,7 @@ class MessageBot:
             chat_id=self.chat_id,
             text=text,
             reply_markup=self.markup,
+            disable_notification=True,
         )
 
     def create_start_message(self, user: User) -> None:
@@ -87,7 +88,6 @@ class MessageBot:
         city: City,
         current_weather: CurrentWeather,
     ) -> None:
-        self.create_buttons_for_days()
         self.create_any_message(
             text=Text.text_current_weather(date=date, city=city, current_weather=current_weather)
         )
@@ -97,13 +97,11 @@ class MessageBot:
         city: City,
         day: WeatherOnDay,
     ) -> None:
-        self.create_buttons_for_days()
         self.create_any_message(text=Text.text_weather_today(city=city, day=day))
 
     def create_message_with_weather_forecast_for_few_days(
         self, city: City, day: WeatherOnDay
     ) -> None:
-        self.create_buttons_for_days()
         self.create_any_message(text=Text.text_weather_for_few_days(city=city, day=day))
 
     def create_message_with_new_cities(self, city_name: str, cities: Sequence[City]) -> None:

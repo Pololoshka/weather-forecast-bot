@@ -3,11 +3,11 @@ from collections.abc import Callable
 from telebot.types import Message
 
 from src.services.db.uow import SqlAlchemyUnitOfWork, create_url
-from src.services.geolocation_client import GeolocationClient
+from src.services.geolocation.geolocation_client import GeolocationClient
 from src.services.ui import handlers as h
 from src.services.ui.bot import MyBot, Service
 from src.services.ui.const_ui import Command, MessageType, Text
-from src.services.wheater_client import WeatherClient
+from src.services.weather.weather_client import WeatherClient
 from src.settings import Settings
 
 
@@ -43,6 +43,8 @@ def main() -> None:
         func=eq(Text.fourteen_days), callback=h.create_weather_forecast_on_fourteen_day
     )
     bot.register_message_handler(func=eq(Text.delete), callback=h.delete_city_user)
+    bot.register_message_handler(regexp=Text.city_regex, callback=h.process_message_with_city)
+
     bot.register_message_handler(content_types=[MessageType.text], callback=h.handle_text)
     bot.register_message_handler(content_types=[MessageType.any], callback=h.handle_any_content)
 

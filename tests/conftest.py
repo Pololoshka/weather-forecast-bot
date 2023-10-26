@@ -1,6 +1,6 @@
 import pytest
 
-from src.models.models_for_db import City
+from src.services.db.models_for_db import City
 from src.settings import Settings
 
 

@@ -3,13 +3,13 @@ from datetime import datetime
 import pytest
 from requests_mock import Mocker as RequestsMocker
 
-from src.models.models_for_db import City
-from src.models.query_models_api import (
+from src.services.db.models_for_db import City
+from src.services.weather.weather_client import WeatherClient
+from src.services.weather.weather_models import (
     CurrentWeather,
     WeatherForecast,
     WeatherOnDay,
 )
-from src.services.wheater_client import WeatherClient
 from src.settings import Settings
 
 

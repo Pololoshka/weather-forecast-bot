@@ -1,13 +1,31 @@
+from collections.abc import Sequence
 from datetime import datetime
 
 from telebot.types import Message
 
-from src.models.models_for_db import User, UserCity
-from src.services.text import get_language
+from src.services.db.models_for_db import City, User, UserCity
+from src.services.db.uow import SqlAlchemyUnitOfWork
+from src.services.text import get_language, parse_city_from_message
 from src.services.ui.bot import MyBot
-from src.view.bot.add_new_cities_in_bd import add_new_cities_in_bd
-from src.view.bot.chahge_preferred_city_user import change_preferred_city
-from src.view.bot.create_message import MessageBot
+from src.services.ui.create_message import MessageBot
+
+
+def add_new_cities_in_bd(bot: MyBot, cities: Sequence[City]) -> None:
+    for city in cities:
+        if bot.services.uow.cities.get_by_name_country_district(
+            city=city.name, country=city.country, district=city.district
+        ):
+            continue
+        bot.services.uow.session.add(city)
+    bot.services.uow.session.flush()
+
+
+def change_preferred_city(user: User, city_id: int, uow: SqlAlchemyUnitOfWork) -> None:
+    if preferred_user_city := user.preferred_user_city:
+        preferred_user_city.is_preferred = False
+    if user_city := uow.user_city.get_by_id(user_id=user.id, city_id=city_id):
+        user_city.is_preferred = True
+    uow.session.flush()
 
 
 def start(message: Message, bot: MyBot, user: User) -> None:
@@ -128,112 +146,27 @@ def delete_city_user(message: Message, bot: MyBot, user: User) -> None:
     MessageBot(chat_id=message.chat.id, bot=bot).create_message_delete_city_user(user=user)
 
 
-def handle_text(message: Message, bot: MyBot, user: User) -> None:
+def process_message_with_city(message: Message, bot: MyBot, user: User) -> None:
     output_message = MessageBot(chat_id=message.chat.id, bot=bot)
 
-    message_list = message.text[:-1].split(" (")
-    if len(message_list) == 2:
-        city_name = message_list[0]
-        country, district = message_list[1].split(", ")
-
-        if city := bot.services.uow.cities.get_by_name_country_district(
-            city=city_name, country=country, district=district
-        ):
-            if city not in (c for c in user.cities):
-                user.city_associations.append(UserCity(city=city))
-                bot.services.uow.session.flush()
-
-            change_preferred_city(user=user, city_id=city.id, uow=bot.services.uow)
-
-            output_message.create_message_with_preferred_city(city=city)
-        else:
-            output_message.create_message_with_incomprehension()
-
-    else:
+    city_ = parse_city_from_message(text=message.text)
+    city = bot.services.uow.cities.get_by_name_country_district(
+        city=city_.city, country=city_.country, district=city_.district
+    )
+    if not city:
         output_message.create_message_with_incomprehension()
+        return
+    if city not in (c for c in user.cities):
+        user.city_associations.append(UserCity(city=city))
+        bot.services.uow.session.flush()
+
+    change_preferred_city(user=user, city_id=city.id, uow=bot.services.uow)
+    output_message.create_message_with_preferred_city(city=city)
+
+
+def handle_text(message: Message, bot: MyBot, user: User) -> None:
+    MessageBot(chat_id=message.chat.id, bot=bot).create_message_with_incomprehension()
 
 
 def handle_any_content(message: Message, bot: MyBot, user: User) -> None:
     MessageBot(chat_id=message.chat.id, bot=bot).create_message_with_incomprehension()
-
-
-# @bot.callback_query_handler(func=lambda callback: True)
-# def callback_message(callback):
-#     with uow:
-
-# class Foo(enum.StrEnum):
-#     yes = enum.auto()
-#     no = enum.auto()
-
-# def create_inline_buttons(id_city: int):
-#     dict1 = {"method": str(Foo.yes), "city": id_city}
-#     dict2 = {"method": str(Foo.no), "city": id_city}
-#     markup_inline = types.InlineKeyboardMarkup()
-#     button_inline_1 = types.InlineKeyboardButton(
-#         "Да",
-#         callback_data=json.dumps(dict1),
-#     )
-#     button_inline_2 = types.InlineKeyboardButton(
-#         "Нет",
-#         callback_data=json.dumps(dict2),
-#     )
-#     markup_inline.row(button_inline_1, button_inline_2)
-#     return markup_inline
-
-
-# @bot.callback_query_handler(func=lambda callback: True)
-# def callback_message(callback):
-#     with uow:
-#         req = callback.data.split("_")
-#         json_string = json.loads(req[0])
-#         city_id = json_string["city"]
-#         city_name = uow.cities.get_by_id(city_id=city_id).name
-#
-#         cities = bot.services.geo_client.get_geolocation(city_name=city_name, language=language)
-#         markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-#         markup.add(*[types.KeyboardButton(city.name.title()) for city in cities], row_width=2)
-#         markup.add(types.KeyboardButton("Выбрать другой город"))
-#         bot.send_message(
-#             chat_id=message.chat.id,
-#             text=f"Ниже показаны варианты городов с названием {city_name.title()}.
-#             Выберите, какой вам подходит",
-#             reply_markup=markup,
-#         )
-#         bot.services.uow.session.add(city for city in cities)
-# user.city_associations.append(UserCity(city=city))
-# bot.services.uow.session.flush()
-
-
-#         bot.edit_message_text(
-#             text=f"Вы выбрали город {city_name}. Хотите сделать его основным?",
-#             chat_id=callback.message.chat.id,
-#             message_id=callback.message.message_id,
-#         )
-#
-#         if json_string["method"] == Foo.yes:
-#             bot.send_message(
-#                 text=f"Вы хотите сделать город основным {city_name}",
-#                 chat_id=callback.message.chat.id,
-#             )
-#             try:
-#                 user_city_is_preferred = uow.user_city.get_is_preferred_city(
-#                     user_id=callback.from_user.id
-#                 )
-#                 user_city_is_preferred.is_preferred = False
-#
-#             except NotFoundError:
-#                 pass
-#
-#             finally:
-#                 user_city = uow.user_city.get_by_id(
-#                     user_id=callback.from_user.id, city_id=city_id)
-#                 user_city.is_preferred = True
-#
-#         elif json_string["method"] == Foo.no:
-#             bot.send_message(
-#                 text=f"Вы не хотите сделать город основным {city_name}",
-#                 chat_id=callback.message.chat.id,
-#             )
-#         else:
-#             ZeroDivisionError()
-#
