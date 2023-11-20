@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Callable
 
 from telebot.types import Message
@@ -5,7 +6,7 @@ from telebot.types import Message
 from src.services.db.uow import SqlAlchemyUnitOfWork, create_url
 from src.services.geolocation.geolocation_client import GeolocationClient
 from src.services.ui import handlers as h
-from src.services.ui.bot import MyBot, Service
+from src.services.ui.bot import Bot, Service
 from src.services.ui.const_ui import Command, MessageType, Text
 from src.services.weather.weather_client import WeatherClient
 from src.settings import Settings
@@ -19,12 +20,18 @@ def eq(a: str) -> Callable:
 
 
 def main() -> None:
-    services = Service(
-        uow=SqlAlchemyUnitOfWork.get_session(url=create_url(settings=Settings.from_environ())),
-        weather_client=WeatherClient(url=Settings.weather_url, timeout=Settings.timeout),
-        geo_client=GeolocationClient(url=Settings.geolocation_url, timeout=Settings.timeout),
+    settings = Settings.from_environ()
+    logging.basicConfig(
+        level=settings.log_level,
+        format="%(name)s %(asctime)s %(levelname)s %(message)s",
     )
-    bot = MyBot(services=services, token=Settings.from_environ().token_telebot)
+
+    services = Service(
+        uow=SqlAlchemyUnitOfWork.from_url(url=create_url(settings=settings)),
+        weather_client=WeatherClient(url=settings.weather_url, timeout=settings.timeout),
+        geo_client=GeolocationClient(url=settings.geolocation_url, timeout=settings.timeout),
+    )
+    bot = Bot(services=services, token=settings.token_telebot)
 
     bot.register_message_handler(commands=[Command.start], callback=h.start)
     bot.register_message_handler(func=eq(Text.add_city), callback=h.add_new_city)

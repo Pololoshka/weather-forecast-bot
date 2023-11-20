@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 from requests_mock import Mocker as RequestsMocker
 
-from src.services.db.models_for_db import City
+from src.services.db.models import City
 from src.services.weather.weather_client import WeatherClient
 from src.services.weather.weather_models import (
     CurrentWeather,
@@ -19,7 +19,7 @@ def client(settings: Settings) -> WeatherClient:
 
 
 def test_get_forecast_weather(
-    requests_mock: RequestsMocker, client: WeatherClient, geolocation: City
+    requests_mock: RequestsMocker, client: WeatherClient, city_1: City
 ) -> None:
     requests_mock.get(
         client.url,
@@ -89,11 +89,11 @@ def test_get_forecast_weather(
         ]
     )
 
-    assert client.get_forecast_weather(days=7, geolocation=geolocation) == expected
+    assert client.get_forecast_weather(days=7, geolocation=city_1) == expected
 
 
 def test_get_current_weather(
-    requests_mock: RequestsMocker, client: WeatherClient, geolocation: City
+    requests_mock: RequestsMocker, client: WeatherClient, city_1: City
 ) -> None:
     requests_mock.get(
         client.url,
@@ -120,4 +120,4 @@ def test_get_current_weather(
         condition=0,
         date=datetime.fromisoformat("2023-08-17T13:00"),
     )
-    assert client.get_current_weather(geolocation=geolocation) == expected
+    assert client.get_current_weather(geolocation=city_1) == expected

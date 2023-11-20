@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 
-from src.services.db.models_for_db import City
+from src.services.db.models import City
 from src.services.weather.const_weather import WEATHER_CODES
 from src.services.weather.weather_models import CurrentWeather, WeatherOnDay
 

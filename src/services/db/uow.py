@@ -1,3 +1,4 @@
+import logging
 from types import TracebackType
 from typing import Protocol, Self
 
@@ -5,6 +6,8 @@ from sqlalchemy import URL, create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from src.services.db.repos import CityRepo, UserCityRepo, UserRepo
+
+logger = logging.getLogger(__name__)
 
 
 class Settings(Protocol):
@@ -30,6 +33,7 @@ class SqlAlchemyUnitOfWork:
     session: Session
     users: UserRepo
     cities: CityRepo
+    user_city: UserCityRepo
 
     def __init__(self, session_factory: sessionmaker):
         self.session_factory = session_factory
@@ -56,14 +60,13 @@ class SqlAlchemyUnitOfWork:
         self.session.commit()
 
     def rollback(self) -> None:
+        logger.warning("UOW rollback transaction")
         self.session.rollback()
 
     @classmethod
-    def get_session(cls, url: URL) -> Self:
+    def from_url(cls, url: URL) -> Self:
         return cls(
             session_factory=sessionmaker(
-                bind=create_engine(
-                    url=url,
-                ),
+                bind=create_engine(url=url),
             )
         )

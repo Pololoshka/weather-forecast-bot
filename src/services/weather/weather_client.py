@@ -1,10 +1,14 @@
+import logging
+
 import requests
 from requests import exceptions as req_exc
 
 from src import exceptions as exc
-from src.services.db.models_for_db import City
+from src.services.db.models import City
 from src.services.ui.const_ui import Text
 from src.services.weather.weather_models import CurrentWeather, WeatherForecast
+
+logger = logging.getLogger(__name__)
 
 
 class WeatherClient:
@@ -27,6 +31,8 @@ class WeatherClient:
                 timeout=self.timeout,
             )
         except req_exc.RequestException as err:
+            logger.error("WeatherClientError from get_forecast_weather", exc_info=True)
+
             raise exc.WeatherClientError(Text.exc_weather) from err
         return WeatherForecast.parse(data=response.json()["daily"])
 
@@ -43,5 +49,6 @@ class WeatherClient:
                 timeout=self.timeout,
             )
         except req_exc.RequestException as err:
+            logger.error("WeatherClientError from get_current_weather", exc_info=True)
             raise exc.WeatherClientError(Text.exc_weather) from err
         return CurrentWeather.parse(data=response.json()["current_weather"])

@@ -25,4 +25,4 @@ def parse_city_from_message(text: str) -> City:
 
     if match := re.match(pattern=Text.city_regex, string=text):
         return City(**match.groupdict())
-    raise ValueError
+    raise ValueError("This is not city")

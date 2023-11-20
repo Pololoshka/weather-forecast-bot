@@ -1,4 +1,5 @@
 import functools
+import logging
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, TypeVar
@@ -10,6 +11,7 @@ from src import exceptions as exc
 from src.services.db.uow import SqlAlchemyUnitOfWork
 from src.services.geolocation.geolocation_client import GeolocationClient
 from src.services.ui.const_ui import Text
+from src.services.ui.create_message import MessageBot
 from src.services.weather.weather_client import WeatherClient
 
 
@@ -22,8 +24,10 @@ class Service:
 
 RT = TypeVar("RT")
 
+logger = logging.getLogger(__name__)
 
-class MyBot(TeleBot):
+
+class Bot(TeleBot):
     def __init__(self, services: Service, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self.services = services
@@ -33,12 +37,13 @@ class MyBot(TeleBot):
         def inner_wrapper(message: Message, *args: Any, **kwargs: Any) -> RT:
             with self.services.uow:
                 if not (user := self.services.uow.users.get(message.from_user.id)):
+                    logger.info("Add new user in db")
                     user = self.services.uow.users.create(
                         user_id=message.from_user.id,
                         first_name=message.from_user.first_name,
                     )
-
-                return func(message, *args, user=user, **kwargs)
+                reply = MessageBot(chat_id=message.chat.id, bot=self)
+                return func(message, *args, user=user, reply=reply, **kwargs)
 
         return inner_wrapper
 
@@ -48,10 +53,10 @@ class MyBot(TeleBot):
             try:
                 return func(message, *args, **kwargs)
             except exc.BotError as err:
+                logger.error("BotError", exc_info=True)
                 self.send_message(chat_id=message.chat.id, text=Text.message_exc(err=str(err)))
-            except Exception as err:
-                # TODO: logger
-                print(err)  # noqa: T201
+            except Exception:
+                logger.error("Unknown error", exc_info=True)
                 self.send_message(chat_id=message.chat.id, text=Text.message_exc(err=""))
             return None
 
