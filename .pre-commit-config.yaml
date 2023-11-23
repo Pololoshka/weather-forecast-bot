@@ -9,7 +9,6 @@ repos:
       - id: check-executables-have-shebangs
       - id: check-case-conflict
       - id: check-json
-        exclude: 'workspace-context.json'
       - id: check-merge-conflict
       - id: check-toml
       - id: check-yaml
