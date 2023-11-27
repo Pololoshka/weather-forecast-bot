@@ -3,9 +3,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from src import exceptions as exc
+from src.bot.bot import Bot
 from src.services.db.models import User
 from src.services.db.uow import SqlAlchemyUnitOfWork
-from src.services.ui.bot import Bot
 
 
 def test_with_db_not_create_user(
@@ -17,7 +17,7 @@ def test_with_db_not_create_user(
     message.from_user.id = user.id
     message.from_user.first_name = user.first_name
 
-    reply = mocker.patch("src.services.ui.bot.MessageBot")
+    reply = mocker.patch("src.bot.bot.ReplyMessage")
 
     bot.services.uow = uow
 
@@ -37,7 +37,7 @@ def test_with_db_with_create_user(
     bot = mocker.MagicMock()
     func = mocker.MagicMock()
     message = mocker.MagicMock()
-    reply = mocker.patch("src.services.ui.bot.MessageBot")
+    reply = mocker.patch("src.bot.bot.ReplyMessage")
 
     user = User(id=1, first_name="Leo")
     message.from_user.id = user.id

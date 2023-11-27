@@ -4,9 +4,9 @@ import requests
 from requests import exceptions as req_exc
 
 from src import exceptions as exc
+from src.bot.const import Text
 from src.services.db.models import City
-from src.services.ui.const_ui import Text
-from src.services.weather.weather_models import CurrentWeather, WeatherForecast
+from src.services.weather.models import CurrentWeather, WeatherForecast
 
 logger = logging.getLogger(__name__)
 

@@ -4,15 +4,15 @@ from typing import TYPE_CHECKING
 
 from telebot import types
 
+from src.bot.const import Text
 from src.services.db.models import City, User
-from src.services.ui.const_ui import Text
-from src.services.weather.weather_models import CurrentWeather, WeatherOnDay
+from src.services.weather.models import CurrentWeather, WeatherOnDay
 
 if TYPE_CHECKING:
-    from src.services.ui.bot import Bot
+    from src.bot.bot import Bot
 
 
-class MessageBot:
+class ReplyMessage:
     def __init__(self, chat_id: int, bot: "Bot"):
         self.chat_id = chat_id
         self.markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)

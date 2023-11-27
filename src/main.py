@@ -3,12 +3,12 @@ from collections.abc import Callable
 
 from telebot.types import Message
 
+from src.bot import handlers as h
+from src.bot.bot import Bot, Service
+from src.bot.const import Command, MessageType, Text
 from src.services.db.uow import SqlAlchemyUnitOfWork, create_url
-from src.services.geolocation.geolocation_client import GeolocationClient
-from src.services.ui import handlers as h
-from src.services.ui.bot import Bot, Service
-from src.services.ui.const_ui import Command, MessageType, Text
-from src.services.weather.weather_client import WeatherClient
+from src.services.geolocation.client import GeolocationClient
+from src.services.weather.client import WeatherClient
 from src.settings import Settings
 
 
@@ -32,6 +32,8 @@ def main() -> None:
         geo_client=GeolocationClient(url=settings.geolocation_url, timeout=settings.timeout),
     )
     bot = Bot(services=services, token=settings.token_telebot)
+    logger = logging.getLogger(name=__name__)
+    logger.info(msg="Bot started")
 
     bot.register_message_handler(commands=[Command.start], callback=h.start)
     bot.register_message_handler(func=eq(Text.add_city), callback=h.add_new_city)

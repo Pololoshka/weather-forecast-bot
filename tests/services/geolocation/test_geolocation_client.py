@@ -1,7 +1,7 @@
 from requests_mock import Mocker as RequestsMocker
 
 from src.services.db.models import City
-from src.services.geolocation.geolocation_client import GeolocationClient
+from src.services.geolocation.client import GeolocationClient
 
 
 def test_get_geolocation(client: GeolocationClient, requests_mock: RequestsMocker) -> None:

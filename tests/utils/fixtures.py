@@ -2,7 +2,7 @@ import pytest
 from sqlalchemy.orm import Session
 
 from src.services.db.models import City, User, UserCity
-from src.services.geolocation.geolocation_client import GeolocationClient
+from src.services.geolocation.client import GeolocationClient
 from src.settings import Settings
 
 

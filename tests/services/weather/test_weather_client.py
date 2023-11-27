@@ -4,8 +4,8 @@ import pytest
 from requests_mock import Mocker as RequestsMocker
 
 from src.services.db.models import City
-from src.services.weather.weather_client import WeatherClient
-from src.services.weather.weather_models import (
+from src.services.weather.client import WeatherClient
+from src.services.weather.models import (
     CurrentWeather,
     WeatherForecast,
     WeatherOnDay,

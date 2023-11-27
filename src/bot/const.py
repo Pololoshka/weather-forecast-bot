@@ -2,8 +2,8 @@ import enum
 from datetime import datetime
 
 from src.services.db.models import City
-from src.services.weather.const_weather import WEATHER_CODES
-from src.services.weather.weather_models import CurrentWeather, WeatherOnDay
+from src.services.weather.const import WEATHER_CODES
+from src.services.weather.models import CurrentWeather, WeatherOnDay
 
 
 class Command(enum.StrEnum):

@@ -8,11 +8,11 @@ from telebot import TeleBot
 from telebot.types import Message
 
 from src import exceptions as exc
+from src.bot.const import Text
+from src.bot.messages import ReplyMessage
 from src.services.db.uow import SqlAlchemyUnitOfWork
-from src.services.geolocation.geolocation_client import GeolocationClient
-from src.services.ui.const_ui import Text
-from src.services.ui.create_message import MessageBot
-from src.services.weather.weather_client import WeatherClient
+from src.services.geolocation.client import GeolocationClient
+from src.services.weather.client import WeatherClient
 
 
 @dataclass
@@ -42,7 +42,7 @@ class Bot(TeleBot):
                         user_id=message.from_user.id,
                         first_name=message.from_user.first_name,
                     )
-                reply = MessageBot(chat_id=message.chat.id, bot=self)
+                reply = ReplyMessage(chat_id=message.chat.id, bot=self)
                 return func(message, *args, user=user, reply=reply, **kwargs)
 
         return inner_wrapper

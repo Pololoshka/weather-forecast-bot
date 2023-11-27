@@ -3,25 +3,25 @@ from datetime import UTC, datetime
 
 from telebot.types import Message
 
+from src.bot.bot import Bot
+from src.bot.messages import ReplyMessage
 from src.services.db.models import City, User, UserCity
 from src.services.db.uow import SqlAlchemyUnitOfWork
 from src.services.text import get_language, parse_city_from_message
-from src.services.ui.bot import Bot
-from src.services.ui.create_message import MessageBot
 
 
-def start(message: Message, bot: Bot, user: User, reply: MessageBot) -> None:
+def start(message: Message, bot: Bot, user: User, reply: ReplyMessage) -> None:
     reply.create_start_message(user=user)
 
 
-def add_new_city(message: Message, bot: Bot, user: User, reply: MessageBot) -> None:
+def add_new_city(message: Message, bot: Bot, user: User, reply: ReplyMessage) -> None:
     reply.create_message_with_input_new_city()
     bot.register_next_step_handler(message=message, callback=on_click)
 
 
-def on_click(message: Message, bot: Bot, user: User, reply: MessageBot) -> None:
+def on_click(message: Message, bot: Bot, user: User, reply: ReplyMessage) -> None:
     language = get_language(message.text)
-    city_name = message.text.lower()
+    city_name = message.text.lower().strip()
 
     if cities_in_bd := bot.services.uow.cities.get_by_name(city=city_name):
         reply.create_message_with_new_cities(city_name=city_name, cities=cities_in_bd)
@@ -36,12 +36,12 @@ def on_click(message: Message, bot: Bot, user: User, reply: MessageBot) -> None:
         reply.create_message_wrong_city(user=user)
 
 
-def choose_another_city(message: Message, bot: Bot, user: User, reply: MessageBot) -> None:
+def choose_another_city(message: Message, bot: Bot, user: User, reply: ReplyMessage) -> None:
     reply.create_message_choose_another_city(user=user)
 
 
 def create_current_weather_forecast(
-    message: Message, bot: Bot, user: User, reply: MessageBot
+    message: Message, bot: Bot, user: User, reply: ReplyMessage
 ) -> None:
     if preferred_user_city := user.preferred_user_city:
         city = preferred_user_city.city
@@ -56,7 +56,7 @@ def create_current_weather_forecast(
 
 
 def create_weather_forecast_on_one_day(
-    message: Message, bot: Bot, user: User, reply: MessageBot
+    message: Message, bot: Bot, user: User, reply: ReplyMessage
 ) -> None:
     if preferred_user_city := user.preferred_user_city:
         city = preferred_user_city.city
@@ -72,7 +72,7 @@ def create_weather_forecast_on_one_day(
 
 
 def create_weather_forecast_on_three_days(
-    message: Message, bot: Bot, user: User, reply: MessageBot
+    message: Message, bot: Bot, user: User, reply: ReplyMessage
 ) -> None:
     if preferred_user_city := user.preferred_user_city:
         city = preferred_user_city.city
@@ -90,7 +90,7 @@ def create_weather_forecast_on_three_days(
 
 
 def create_weather_forecast_on_seven_days(
-    message: Message, bot: Bot, user: User, reply: MessageBot
+    message: Message, bot: Bot, user: User, reply: ReplyMessage
 ) -> None:
     if preferred_user_city := user.preferred_user_city:
         city = preferred_user_city.city
@@ -107,7 +107,7 @@ def create_weather_forecast_on_seven_days(
 
 
 def create_weather_forecast_on_fourteen_day(
-    message: Message, bot: Bot, user: User, reply: MessageBot
+    message: Message, bot: Bot, user: User, reply: ReplyMessage
 ) -> None:
     if preferred_user_city := user.preferred_user_city:
         city = preferred_user_city.city
@@ -123,13 +123,13 @@ def create_weather_forecast_on_fourteen_day(
         reply.create_message_except_no_preferred_city()
 
 
-def delete_city_user(message: Message, bot: Bot, user: User, reply: MessageBot) -> None:
+def delete_city_user(message: Message, bot: Bot, user: User, reply: ReplyMessage) -> None:
     del user.city_associations[:-4]
     bot.services.uow.session.flush()
     reply.create_message_delete_city_user(user=user)
 
 
-def process_message_with_city(message: Message, bot: Bot, user: User, reply: MessageBot) -> None:
+def process_message_with_city(message: Message, bot: Bot, user: User, reply: ReplyMessage) -> None:
     city_ = parse_city_from_message(text=message.text)
     city = bot.services.uow.cities.get_by_name_country_district(
         city=city_.city, country=city_.country, district=city_.district
@@ -145,11 +145,11 @@ def process_message_with_city(message: Message, bot: Bot, user: User, reply: Mes
     reply.create_message_with_preferred_city(city=city)
 
 
-def handle_text(message: Message, bot: Bot, user: User, reply: MessageBot) -> None:
+def handle_text(message: Message, bot: Bot, user: User, reply: ReplyMessage) -> None:
     reply.create_message_with_incomprehension()
 
 
-def handle_any_content(message: Message, bot: Bot, user: User, reply: MessageBot) -> None:
+def handle_any_content(message: Message, bot: Bot, user: User, reply: ReplyMessage) -> None:
     reply.create_message_with_incomprehension()
 
 

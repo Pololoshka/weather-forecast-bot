@@ -8,12 +8,8 @@ from pytest_mock import MockFixture
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from src.services.db.models import City, User, UserCity
-from src.services.db.uow import SqlAlchemyUnitOfWork
-from src.services.geolocation.geolocation_client import GeolocationClient
-from src.services.ui.bot import Bot
-from src.services.ui.create_message import MessageBot
-from src.services.ui.handlers import (
+from src.bot.bot import Bot
+from src.bot.handlers import (
     _add_new_cities_in_bd,
     _change_preferred_city,
     add_new_city,
@@ -30,8 +26,12 @@ from src.services.ui.handlers import (
     process_message_with_city,
     start,
 )
-from src.services.weather.weather_client import WeatherClient
-from src.services.weather.weather_models import CurrentWeather, WeatherForecast, WeatherOnDay
+from src.bot.messages import ReplyMessage
+from src.services.db.models import City, User, UserCity
+from src.services.db.uow import SqlAlchemyUnitOfWork
+from src.services.geolocation.client import GeolocationClient
+from src.services.weather.client import WeatherClient
+from src.services.weather.models import CurrentWeather, WeatherForecast, WeatherOnDay
 
 
 class AttrGenerator(Protocol):
@@ -50,7 +50,7 @@ def bot(mocker: MockFixture, uow: SqlAlchemyUnitOfWork) -> MagicMock:
 
 @pytest.fixture()
 def reply(mocker: MockFixture) -> MagicMock:
-    return mocker.MagicMock(spec=MessageBot).return_value  # type: ignore
+    return mocker.MagicMock(spec=ReplyMessage).return_value  # type: ignore
 
 
 @dataclass
