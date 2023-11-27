@@ -1,6 +1,6 @@
 version: "3"
 services:
-  postgres:
+  db:
     image: postgres:latest
     restart: always
     env_file:
@@ -13,6 +13,26 @@ services:
       - db-data:/var/lib/postgresql/data
     ports:
       - "${DB_HOST}:${DB_PORT}:5432"
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -c "poetry run alembic upgrade head && poetry run python -m src.main"
+    restart: always
+    env_file:
+      - .env
+    environment:
+      DB_NAME: $DB_NAME
+      DB_USER: $DB_USER
+      DB_PASSWORD: $DB_PASSWORD
+      DB_HOST: db
+      DB_PORT: $DB_PORT
+      TOKEN_TELEBOT: $TOKEN_TELEBOT
+
+    depends_on:
+      - db
+    container_name: weather_bot
+
 
 volumes:
   db-data:

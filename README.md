@@ -81,7 +81,11 @@ To run tests use the command:
 ```
 pytest tests/
 ```
-
+### Running Bot in Docker
+To run the bot in docker, enter the commands:
+```
+docker-compose up -d
+```
 ### Linters and Formatters
 
 The following linters and formatters are used in the project:
