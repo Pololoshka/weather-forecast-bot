@@ -13,7 +13,7 @@ WORKDIR /app
 COPY ./pyproject.toml .
 COPY ./poetry.lock .
 
-RUN poetry install
+RUN poetry install --only main
 
 COPY ./src/ ./src/
 COPY ./alembic.ini .

@@ -45,13 +45,13 @@ pre-commit autoupdate
 
 PostgreSQL DBMS is used to work with the database. The application is launched using Docker Compose.
 
-To connect to Docker Compose,
+To connect to DB,
 you need to copy the data from the `.env.tests` file to the `.env` file and edit it.
 
 To get started with docker use the command:
 
 ```
-docker-compose up
+docker-compose up db
 ```
 
 ### Database migrations
